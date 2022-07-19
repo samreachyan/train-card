@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  api:
+    build: .
+    image: ml_read_card
+    command: uvicorn app:app --reload --workers 1 --host 0.0.0.0 --port 80
+    ports:
+      - 80:80
+    
+  
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      # key ssl
+      - ./key.pem:/root/ssl/key.pem
+      - ./cert.pem:/root/ssl/cert.pem
+
+    ports:
+      - 443:443
+    depends_on:
+      - api

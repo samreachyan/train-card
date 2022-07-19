@@ -123,4 +123,4 @@ def mainFun(img_path=None, vid_path=None, vid_out=None):
         print(f"[INFO] Cleaning up. . . ")
         return number
 # -------------------  calling the main function-------------------------------
-# main(img_path="./test_images/3.jpg")  ## for image
+# mainF(img_path="./test_images/3.jpg")  ## for image
