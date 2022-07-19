@@ -39,12 +39,12 @@ def plot_boxes(results, frame, classes):
             x1, y1, x2, y2 = int(row[0] * x_shape), int(row[1] * y_shape), int(row[2] * x_shape), int(
                 row[3] * y_shape)  ## BBOx coordniates
             text_d = classes[int(labels[i])]
-            #cv2.imwrite("dp.jpg",frame[int(y1):int(y2), int(x1):int(x2)])
 
             coords = [x1, y1, x2, y2]
 
             plate_num = recognize_plate_easyocr(img=frame, coords=coords, reader=EASY_OCR, region_threshold=OCR_TH)
 
+            print(f"result -> {plate_num}")
             # if text_d == 'mask':
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, ), 2)  ## BBox
             cv2.rectangle(frame, (x1, y1 - 20), (x2, y1), (0, 255, ), -2)  ## for text label background
@@ -52,7 +52,7 @@ def plot_boxes(results, frame, classes):
 
             #cv2.imwrite("np.jpg",frame[int(y1)-25:int(y2)+25, int(x1)-25:int(x2)+25])
 
-    return frame
+    return frame, plate_num
 
 
 # ---------------------------- function to recognize scratch card --------------------------------------
@@ -79,9 +79,9 @@ def filter_text(region, ocr_result, region_threshold):
     rectangle_size = region.shape[0] * region.shape[1]
 
     scratch_card = []
-    save_results(ocr_result[-1], 'ocr_results.csv', 'Detection_Images')
+    # save_results(ocr_result[-1], 'ocr_results.csv', 'Detection_Images')
+    # print("Samreach : ")
     print(ocr_result)
-
 
     for result in ocr_result:
         length = np.sum(np.subtract(result[0][1], result[0][0]))
@@ -94,19 +94,19 @@ def filter_text(region, ocr_result, region_threshold):
 
 # ---------------------------------------------- Main function -----------------------------------------------------
 
-def main(img_path=None, vid_path=None, vid_out=None):
+def mainFun(img_path=None, vid_path=None, vid_out=None):
     print(f"[INFO] Loading model... ")
     ## loading the custom trained model
-    # model =  torch.hub.load('ultralytics/yolov5', 'custom', path='best_card.pt',force_reload=True).autoshape() ## if you want to download the git repo and then run the detection
-    model = torch.hub.load(r'/home/opti/Documents/SimCard/yolov5-master', 'custom', source='local', path='best_card.pt',
-                           force_reload=True).autoshape()  ### The repo is stored locally
+    # model =  torch.hub.load('ultralytics/yolov5', 'custom', path='last.pt',force_reload=True) ## if you want to download the git repo and then run the detection
+    model = torch.hub.load('./yolov5-master', 'custom', source='local', path='best_card.pt',
+                           force_reload=True)  ### The repo is stored locally
 
     classes = model.names  ### class names in string format
 
 # --------------- for detection on image --------------------
     if img_path != None:
         print(f"[INFO] Working with image: {img_path}")
-        img_out_name = f"./output/result_{img_path.split('/')[-1]}"
+        # img_out_name = f"./output/result_{img_path.split('/')[-1]}"
 
         frame = cv2.imread(img_path)  ### reading the image
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -115,14 +115,12 @@ def main(img_path=None, vid_path=None, vid_out=None):
 
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
-        frame = plot_boxes(results, frame, classes=classes)
-        while True:
-            #frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
-            cv2.imwrite("img2.jpg", frame)
-            break
+        frame, number = plot_boxes(results, frame, classes=classes)
+        # while True:
+        #     #frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
+        #     cv2.imwrite("img2.jpg", frame)
+        #     break
         print(f"[INFO] Cleaning up. . . ")
+        return number
 # -------------------  calling the main function-------------------------------
-main(img_path="./test_images/3.jpg")  ## for image
-
-
-
+# main(img_path="./test_images/3.jpg")  ## for image
