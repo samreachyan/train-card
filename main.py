@@ -5,7 +5,7 @@ import easyocr
 from helper.general_utils import save_results
 
 # DEFINING GLOBAL VARIABLE
-EASY_OCR = easyocr.Reader(['en'])
+EASY_OCR = easyocr.Reader(['en'], gpu=True)
 OCR_TH = 0.2
 
 # -------------------------------------- function to run detection ---------------------------------------------------------
@@ -13,7 +13,7 @@ def detectx(frame, model):
     frame = [frame]
     print(f"[INFO] Detecting. . . ")
     results = model(frame)
-    results.show()
+    # results.show()
     # print(results.xyxyn[0])
     # print(results.xyxyn[0][:, -1])
     # print(results.xyxyn[0][:, :-1])
@@ -44,7 +44,12 @@ def plot_boxes(results, frame, classes):
 
             plate_num = recognize_plate_easyocr(img=frame, coords=coords, reader=EASY_OCR, region_threshold=OCR_TH)
 
-            print(f"result -> {plate_num}")
+            num = ""
+            for c in (plate_num):
+                if c.isdigit():
+                    num = num + c
+            # print(num)
+            print(f"result -> {num}")
             # if text_d == 'mask':
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, ), 2)  ## BBox
             cv2.rectangle(frame, (x1, y1 - 20), (x2, y1), (0, 255, ), -2)  ## for text label background
@@ -52,7 +57,7 @@ def plot_boxes(results, frame, classes):
 
             #cv2.imwrite("np.jpg",frame[int(y1)-25:int(y2)+25, int(x1)-25:int(x2)+25])
 
-    return frame, plate_num
+    return frame, num
 
 
 # ---------------------------- function to recognize scratch card --------------------------------------
@@ -81,7 +86,13 @@ def filter_text(region, ocr_result, region_threshold):
     scratch_card = []
     # save_results(ocr_result[-1], 'ocr_results.csv', 'Detection_Images')
     # print("Samreach : ")
-    print(ocr_result)
+    # Select only number
+    num = ""
+    for c in (ocr_result[0][-2]):
+        if c.isdigit():
+            num = num + c
+    print(num)
+    # print(ocr_result)
 
     for result in ocr_result:
         length = np.sum(np.subtract(result[0][1], result[0][0]))
